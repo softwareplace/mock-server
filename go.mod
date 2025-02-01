@@ -7,6 +7,7 @@ toolchain go1.23.4
 require (
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/softwareplace/http-utils v0.0.0-20250201215834-edafa79b98f3
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -31,5 +32,4 @@ require (
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/tools v0.29.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
