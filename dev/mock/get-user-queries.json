@@ -1,0 +1,26 @@
+{
+  "request": {
+    "path": "/api/user/view",
+    "method": "GET",
+    "contentType": "application/json",
+    "queries": {
+      "id": 2,
+      "name": "User Tester"
+    }
+  },
+  "response": {
+    "delay": 0,
+    "contentType": "application/json",
+    "statusCode": 200,
+    "headers": {
+      "userId": 2,
+      "userName": "User For Queries request",
+      "email": "john.doe@email.com"
+    },
+    "body": {
+      "id": 2,
+      "name": "User For Queries request",
+      "email": "john.doe@email.com"
+    }
+  }
+}
