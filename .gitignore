@@ -1,0 +1,5 @@
+.out/
+.temp/
+.log/
+.idea/
+docker-out/
