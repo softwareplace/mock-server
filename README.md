@@ -17,7 +17,7 @@ backend.
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/softwareplace/mock-server.git
+   git clone git@github.com:softwareplace/mock-server.git
    cd mock-server
    ```
 
