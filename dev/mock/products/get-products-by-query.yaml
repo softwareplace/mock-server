@@ -1,0 +1,20 @@
+request:
+  path: "/api/products"
+  method: "GET"
+response:
+  content-type: "application/json"
+  status-code: 200
+  delay: 256
+  bodies:
+    - body:
+        id: 1
+        name: "Product 1"
+        amount: 2500.75
+      queries:
+        id: 1
+    - body:
+        id: 2
+        name: "Product 2"
+        amount: 2500.75
+      queries:
+        id: 2

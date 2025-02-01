@@ -6,6 +6,7 @@ import (
 	"github.com/softwareplace/http-utils/server"
 	"log"
 	"net/http"
+	"time"
 )
 
 func Register(appServer server.ApiRouterHandler[*api_context.DefaultContext]) {
@@ -42,6 +43,10 @@ func requestHandler(
 		for key, value := range matchedBody.Headers {
 			writer.Header().Set(key, fmt.Sprintf("%v", value))
 		}
+		if config.Response.Delay > 0 {
+			time.Sleep(time.Duration(config.Response.Delay) * time.Millisecond)
+		}
+
 		ctx.Response(matchedBody.Body, config.Response.StatusCode)
 		return
 	}
