@@ -3,6 +3,18 @@ package handler
 type MockConfigResponse struct {
 	Request  RequestConfig  `json:"request" yaml:"request"`
 	Response ResponseConfig `json:"response" yaml:"response"`
+	Redirect RedirectConfig `json:"redirect" yaml:"redirect"`
+}
+
+type Replacement struct {
+	Old string `json:"old" yaml:"old"`
+	New string `json:"new" yaml:"new"`
+}
+
+type RedirectConfig struct {
+	Url         string         `json:"url" yaml:"url"`
+	Headers     map[string]any `json:"headers" yaml:"headers"`
+	Replacement []Replacement  `json:"replacement" yaml:"replacement"`
 }
 
 type RequestConfig struct {

@@ -1,6 +1,13 @@
 request:
-  path: "/api/products"
+  path: "/v1/products"
   method: "GET"
+redirect:
+  url: http://localhost:8888/
+  replacement:
+    - old: mock-server
+      new: ""
+    - old: api
+      new: ""
 response:
   content-type: "application/json"
   status-code: 200
@@ -18,3 +25,6 @@ response:
         amount: 2500.75
       queries:
         id: 2
+      headers:
+        is: 2
+        name: Product 2

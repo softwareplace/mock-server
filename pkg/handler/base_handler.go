@@ -4,22 +4,61 @@ import (
 	"fmt"
 	"github.com/softwareplace/http-utils/api_context"
 	"github.com/softwareplace/http-utils/server"
+	"github.com/softwareplace/mock-server/pkg/env"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
 func Register(appServer server.ApiRouterHandler[*api_context.DefaultContext]) {
 	for _, config := range MockConfigResponses {
 		if config.Request.Method != "" && config.Request.Path != "" && config.Response.Bodies != nil {
-			log.Printf("Registering handler for %s::%s\n", config.Request.Method, config.Request.Path)
+			contextPath := env.GetAppEnv().ContextPath
+
+			path := strings.TrimPrefix(config.Request.Path, "/")
+			log.Printf("Registering handler for %s::%s%s\n", config.Request.Method, contextPath, path)
+
 			appServer.Add(func(ctx *api_context.ApiRequestContext[*api_context.DefaultContext]) {
-				requestHandler(ctx, config)
+				url := ctx.Request.RequestURI
+				log.Printf("Request %s::%s\n", config.Request.Method, url)
+				if !redirectHandler(ctx, config) {
+					requestHandler(ctx, config)
+				}
+
 			}, config.Request.Path, config.Request.Method)
 		}
 	}
 }
 
+func redirectHandler(ctx *api_context.ApiRequestContext[*api_context.DefaultContext], config MockConfigResponse) (redirected bool) {
+	if config.Redirect.Url != "" {
+		var request http.Request
+		request = *ctx.Request
+
+		for key, value := range config.Redirect.Headers {
+			request.Header.Set(key, fmt.Sprintf("%v", value))
+		}
+
+		requestURI := request.RequestURI
+
+		replacement := config.Redirect.Replacement
+		if len(replacement) > 0 {
+			for _, replace := range replacement {
+				requestURI = strings.ReplaceAll(requestURI, replace.Old, replace.New)
+			}
+		}
+		requestURI = strings.ReplaceAll(requestURI, "//", "/")
+
+		targetURL := strings.TrimSuffix(config.Redirect.Url, "/") + "/" +
+			strings.TrimPrefix(requestURI, "/")
+
+		http.Redirect(*ctx.Writer, &request, targetURL, http.StatusTemporaryRedirect)
+		log.Printf("Redirecting to %s\n", targetURL)
+		return true
+	}
+	return false
+}
 func requestHandler(
 	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
 	config MockConfigResponse,

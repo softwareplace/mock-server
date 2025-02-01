@@ -6,7 +6,7 @@ toolchain go1.23.4
 
 require (
 	github.com/fsnotify/fsnotify v1.8.0
-	github.com/softwareplace/http-utils v0.0.0-20250201173844-e7d07acefae9
+	github.com/softwareplace/http-utils v0.0.0-20250201215834-edafa79b98f3
 )
 
 require (

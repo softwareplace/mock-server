@@ -11,7 +11,9 @@ func main() {
 	appEnv := env.GetAppEnv()
 	handler.LoadResponses()
 
-	appServer := server.Default()
+	appServer := server.Default().
+		WithContextPath(appEnv.ContextPath)
+
 	if !handler.ConfigLoaded {
 		for !handler.ConfigLoaded {
 			time.Sleep(256 * time.Millisecond)
@@ -22,5 +24,6 @@ func main() {
 
 	appServer.
 		WithPort(appEnv.Port).
+		NotFoundHandler().
 		StartServer()
 }
