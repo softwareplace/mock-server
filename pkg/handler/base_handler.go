@@ -1,102 +1,102 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/softwareplace/http-utils/api_context"
+	"github.com/softwareplace/http-utils/server"
+	"log"
 	"net/http"
-	"regexp"
-	"time"
 )
 
-type MockConfigResponse struct {
-	Request  RequestConfig  `json:"request" yaml:"request"`
-	Response ResponseConfig `json:"response" yaml:"response"`
-}
-
-type RequestConfig struct {
-	Path        string         `json:"path" yaml:"path"`
-	Method      string         `json:"method" yaml:"method"`
-	ContentType string         `json:"contentType" yaml:"content-type" yaml:"contentType"`
-	Queries     map[string]any `json:"queries" yaml:"queries"`
-	Paths       map[string]any `json:"paths" yaml:"paths"`
-}
-
-type ResponseConfig struct {
-	ContentType string                 `json:"contentType" yaml:"content-type" yaml:"contentType"`
-	StatusCode  int                    `json:"statusCode" yaml:"status-code" yaml:"statusCode"`
-	Delay       int                    `json:"delay" yaml:"delay"`
-	Headers     map[string]any         `json:"headers" yaml:"headers"`
-	Body        map[string]interface{} `json:"body" yaml:"body"`
-}
-
-var (
-	Responses []MockConfigResponse
-)
-
-func RequestHandler() func(w http.ResponseWriter, r *http.Request) {
-	LoadResponses()
-	return func(w http.ResponseWriter, r *http.Request) {
-		responses := Responses
-
-		matchedResponse := (*MockConfigResponse)(nil)
-		for _, response := range responses {
-			// Match path using regex
-			matched, err := regexp.MatchString(response.Request.Path, r.URL.Path)
-			if err != nil {
-				http.Error(w, "Invalid path configuration", http.StatusInternalServerError)
-				return
-			}
-
-			if matched && response.Request.Method == r.Method {
-				// Validate queries if they are present in the response
-				if len(response.Request.Queries) > 0 {
-					valid := true
-					queryValues := r.URL.Query()
-
-					for key, value := range response.Request.Queries {
-						if queryValues.Get(key) != fmt.Sprintf("%v", value) {
-							valid = false
-							break
-						}
-					}
-
-					if valid {
-						matchedResponse = &response
-						break
-					}
-				} else {
-					matchedResponse = &response
-					break
-				}
-			}
-		}
-
-		if matchedResponse == nil {
-			http.Error(w, "Unavailable service", http.StatusServiceUnavailable)
-			return
-		}
-
-		// Write the matched response
-		w.Header().Set("Content-Type", matchedResponse.Response.ContentType)
-		// Write headers if present in the matched response
-		if len(matchedResponse.Response.Headers) > 0 {
-			for key, value := range matchedResponse.Response.Headers {
-				w.Header().Set(key, fmt.Sprintf("%v", value))
-			}
-		}
-
-		w.WriteHeader(matchedResponse.Response.StatusCode)
-
-		if matchedResponse.Response.Delay > 0 {
-			time.Sleep(time.Duration(matchedResponse.Response.Delay) * time.Second)
-		}
-		if matchedResponse.Response.Body != nil {
-			body, err := json.Marshal(matchedResponse.Response.Body)
-			if err != nil {
-				http.Error(w, "Error encoding response body", http.StatusInternalServerError)
-				return
-			}
-			_, _ = w.Write(body)
+func Register(appServer server.ApiRouterHandler[*api_context.DefaultContext]) {
+	for _, config := range MockConfigResponses {
+		if config.Request.Method != "" && config.Request.Path != "" && config.Response.Bodies != nil {
+			log.Printf("Registering handler for %s::%s\n", config.Request.Method, config.Request.Path)
+			appServer.Add(func(ctx *api_context.ApiRequestContext[*api_context.DefaultContext]) {
+				requestHandler(ctx, config)
+			}, config.Request.Path, config.Request.Method)
 		}
 	}
+}
+
+func requestHandler(
+	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
+	config MockConfigResponse,
+) {
+	bodies := config.Response.Bodies
+	var matchedBody *ResponseBody
+
+	matchedBody = findMatchingBody(ctx, bodies)
+
+	writer := *ctx.Writer
+
+	// If no matching body is found, use the first body as a default
+	if matchedBody == nil && len(bodies) > 0 {
+		writer.WriteHeader(http.StatusNotFound)
+		_, _ = writer.Write([]byte("Resource not found"))
+		return
+	}
+
+	// If a matching body is found, return it as the response
+	if matchedBody != nil {
+		for key, value := range matchedBody.Headers {
+			writer.Header().Set(key, fmt.Sprintf("%v", value))
+		}
+		ctx.Response(matchedBody.Body, config.Response.StatusCode)
+		return
+	}
+
+	ctx.Error("Resource not found", http.StatusNotFound)
+}
+
+func findMatchingBody(
+	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
+	bodies []ResponseBody,
+) *ResponseBody {
+	var matchedBody *ResponseBody
+	// Extract query and path parameters from the incoming request
+
+	// Iterate through the bodies to find a match
+	for _, body := range bodies {
+		if containsExpectedPathsAndQueries(ctx, body) {
+			matchedBody = &body
+			break
+		}
+	}
+	return matchedBody
+}
+
+func containsExpectedPathsAndQueries(
+	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
+	body ResponseBody,
+) bool {
+	return containsExpectedPaths(ctx, body) && containsExpectedQueries(ctx, body)
+}
+
+func containsExpectedPaths(
+	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
+	body ResponseBody,
+) bool {
+	requestedPaths := ctx.PathValues
+	// Check if the paths match
+	pathsMatch := true
+	for key, value := range body.Paths {
+		if requestedPaths[key] != fmt.Sprintf("%v", value) {
+			pathsMatch = false
+			break
+		}
+	}
+	return pathsMatch
+}
+
+func containsExpectedQueries(ctx *api_context.ApiRequestContext[*api_context.DefaultContext], body ResponseBody) bool {
+	requestedQueries := ctx.QueryValues
+	var queriesMatch = true
+	for key, value := range body.Queries {
+		if requestedQueries[key][0] != fmt.Sprintf("%v", value) {
+			queriesMatch = false
+			break
+		}
+	}
+	return queriesMatch
 }

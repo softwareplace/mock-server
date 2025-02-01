@@ -4,12 +4,23 @@ import (
 	"github.com/softwareplace/http-utils/server"
 	"github.com/softwareplace/mock-server/pkg/env"
 	"github.com/softwareplace/mock-server/pkg/handler"
+	"time"
 )
 
 func main() {
 	appEnv := env.GetAppEnv()
-	server.Default().
+	handler.LoadResponses()
+
+	appServer := server.Default()
+	if !handler.ConfigLoaded {
+		for !handler.ConfigLoaded {
+			time.Sleep(256 * time.Millisecond)
+		}
+	}
+
+	handler.Register(appServer)
+
+	appServer.
 		WithPort(appEnv.Port).
-		CustomNotFoundHandler(handler.RequestHandler()).
 		StartServer()
 }

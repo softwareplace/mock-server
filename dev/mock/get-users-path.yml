@@ -1,0 +1,22 @@
+request:
+  path: "/api/user/{id}/view"
+  method: "GET"
+response:
+  content-type: "application/json"
+  status-code: 200
+  bodies:
+    - paths:
+        id: 2
+      body:
+        id: 2
+        name: "User 2"
+        email: "john.doe+2@email.com"
+    - paths:
+        id: 3
+      headers:
+        user: User3
+        id: 3
+      body:
+        id: 3
+        name: "User 3"
+        email: "john.doe+3@email.com"

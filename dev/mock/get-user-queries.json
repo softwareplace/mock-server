@@ -2,25 +2,43 @@
   "request": {
     "path": "/api/user/view",
     "method": "GET",
-    "contentType": "application/json",
-    "queries": {
-      "id": 2,
-      "name": "User Tester"
-    }
+    "contentType": "application/json"
   },
   "response": {
     "delay": 0,
     "contentType": "application/json",
     "statusCode": 200,
-    "headers": {
-      "userId": 2,
-      "userName": "User For Queries request",
-      "email": "john.doe@email.com"
-    },
-    "body": {
-      "id": 2,
-      "name": "User For Queries request",
-      "email": "john.doe@email.com"
-    }
+    "bodies": [
+      {
+        "queries": {
+          "id": 2,
+          "name": "User 2"
+        },
+        "headers": {
+          "id": 2,
+          "name": "User 2"
+        },
+        "body": {
+          "id": 2,
+          "name": "User For Queries request",
+          "email": "john.doe+2@email.com"
+        }
+      },
+      {
+        "queries": {
+          "id": 3,
+          "name": "User 3"
+        },
+        "headers": {
+          "id": 3,
+          "name": "User 3"
+        },
+        "body": {
+          "id": 3,
+          "name": "User For Queries request",
+          "email": "john.doe+3@email.com"
+        }
+      }
+    ]
   }
 }
