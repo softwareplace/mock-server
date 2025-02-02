@@ -33,5 +33,5 @@ response:
         queries:
           id: 2
         headers:
-          is: 2
+          id: 2
           name: Product 2

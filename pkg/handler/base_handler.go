@@ -139,7 +139,7 @@ func containsExpectedQueries(ctx *api_context.ApiRequestContext[*api_context.Def
 	requestedQueries := ctx.QueryValues
 	var queriesMatch = true
 	for key, value := range body.Matching.Queries {
-		if requestedQueries[key][0] != fmt.Sprintf("%v", value) {
+		if len(requestedQueries[key]) > 0 && requestedQueries[key][0] != fmt.Sprintf("%v", value) {
 			queriesMatch = false
 			break
 		}
@@ -151,7 +151,7 @@ func containsExpectedHeaders(ctx *api_context.ApiRequestContext[*api_context.Def
 	requestHeaders := ctx.Headers
 	var headersMatch = true
 	for key, value := range body.Matching.Headers {
-		if requestHeaders[key][0] != fmt.Sprintf("%v", value) {
+		if len(requestHeaders[key]) > 0 && requestHeaders[key][0] != fmt.Sprintf("%v", value) {
 			headersMatch = false
 			break
 		}

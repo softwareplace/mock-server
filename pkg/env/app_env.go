@@ -15,6 +15,10 @@ type AppEnv struct {
 
 var env *AppEnv
 
+func SetAppEnv(appEnv *AppEnv) {
+	env = appEnv
+}
+
 func GetAppEnv() *AppEnv {
 	if env == nil {
 		mockPath := flag.String("mock", "", "Directory path containing JSON files")
