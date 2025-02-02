@@ -114,6 +114,10 @@ func containsExpectedPathsAndQueries(
 	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
 	body ResponseBody,
 ) bool {
+	if body.Matching == nil {
+		return true
+	}
+
 	return containsExpectedPaths(ctx, body) &&
 		containsExpectedQueries(ctx, body) &&
 		containsExpectedHeaders(ctx, body)
@@ -125,36 +129,64 @@ func containsExpectedPaths(
 ) bool {
 	requestedPaths := ctx.PathValues
 	// Check if the paths match
-	pathsMatch := true
+	pathsMatch := len(requestedPaths) == len(body.Matching.Paths)
 	for key, value := range body.Matching.Paths {
 		if requestedPaths[key] != fmt.Sprintf("%v", value) {
 			pathsMatch = false
 			break
 		}
 	}
+	if pathsMatch {
+		log.Printf("Paths match for request %s\n", ctx.Request.URL.RequestURI())
+	}
 	return pathsMatch
 }
 
 func containsExpectedQueries(ctx *api_context.ApiRequestContext[*api_context.DefaultContext], body ResponseBody) bool {
 	requestedQueries := ctx.QueryValues
-	var queriesMatch = true
+	var queriesMatch = len(requestedQueries) == len(body.Matching.Queries)
 	for key, value := range body.Matching.Queries {
-		if len(requestedQueries[key]) > 0 && requestedQueries[key][0] != fmt.Sprintf("%v", value) {
+		if len(requestedQueries[key]) == 0 {
 			queriesMatch = false
 			break
 		}
+
+		if requestedQueries[key][0] != fmt.Sprintf("%v", value) {
+			queriesMatch = false
+			break
+		}
+	}
+	if queriesMatch {
+		log.Printf("Queries match for request %s\n", ctx.Request.URL.RequestURI())
 	}
 	return queriesMatch
 }
 
 func containsExpectedHeaders(ctx *api_context.ApiRequestContext[*api_context.DefaultContext], body ResponseBody) bool {
-	requestHeaders := ctx.Headers
-	var headersMatch = true
+	var requestHeaders = make(map[string][]string)
+
+	if ctx.Request.Header != nil {
+		for key, values := range ctx.Headers {
+			lowerKey := strings.ToLower(key)
+			requestHeaders[lowerKey] = values
+
+		}
+	}
+
+	var headersMatch = len(requestHeaders) == len(body.Matching.Headers)
+
 	for key, value := range body.Matching.Headers {
-		if len(requestHeaders[key]) > 0 && requestHeaders[key][0] != fmt.Sprintf("%v", value) {
+		if len(requestHeaders[key]) == 0 {
 			headersMatch = false
 			break
 		}
+		if requestHeaders[key][0] != fmt.Sprintf("%v", value) {
+			headersMatch = false
+			break
+		}
+	}
+	if headersMatch {
+		log.Printf("Headers match for request %s\n", ctx.Request.URL.RequestURI())
 	}
 	return headersMatch
 }

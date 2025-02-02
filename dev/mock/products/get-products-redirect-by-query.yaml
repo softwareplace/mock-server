@@ -1,6 +1,13 @@
 request:
-  path: "/v1/products"
+  path: "/v1/redirect/products"
   method: "GET"
+redirect:
+  url: http://localhost:8888/
+  replacement:
+    - old: mock-server
+      new: ""
+    - old: api
+      new: ""
 response:
   content-type: "application/json"
   status-code: 200
@@ -19,7 +26,7 @@ response:
         amount: 2500.75
       #  In case the need to add headers on the response.
       headers:
-        id: 2
+        is: 2
         name: Product 2
       # Handles product retrieval. Filters the body with matching queries, headers, and path parameters if provided.
       matching:

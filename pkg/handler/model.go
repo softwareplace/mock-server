@@ -30,7 +30,7 @@ type Matching struct {
 }
 type ResponseBody struct {
 	Body     interface{}    `json:"body" yaml:"body"`         // Body represents the dynamic content of the response, serialized based on the provided JSON or YAML format.
-	Matching Matching       `json:"matching" yaml:"matching"` // Matching handles product retrieval. Filters the body with matching queries, headers, and path parameters if provided.
+	Matching *Matching      `json:"matching" yaml:"matching"` // Matching handles product retrieval. Filters the body with matching queries, headers, and path parameters if provided.
 	Headers  map[string]any `json:"headers" yaml:"headers"`   // Headers in case that need to add headers to the response
 }
 
