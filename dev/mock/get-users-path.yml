@@ -5,17 +5,19 @@ response:
   content-type: "application/json"
   status-code: 200
   bodies:
-    - paths:
-        id: 2
+    - matching:
+        paths:
+          id: 2
       body:
         id: 2
         name: "User 2"
         email: "john.doe+2@email.com"
-    - paths:
-        id: 3
-      headers:
-        user: User3
-        id: 3
+    - matching:
+        paths:
+          id: 3
+        headers:
+          user: User3
+          id: 3
       body:
         id: 3
         name: "User 3"

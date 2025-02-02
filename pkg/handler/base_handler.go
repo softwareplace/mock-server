@@ -114,7 +114,9 @@ func containsExpectedPathsAndQueries(
 	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
 	body ResponseBody,
 ) bool {
-	return containsExpectedPaths(ctx, body) && containsExpectedQueries(ctx, body)
+	return containsExpectedPaths(ctx, body) &&
+		containsExpectedQueries(ctx, body) &&
+		containsExpectedHeaders(ctx, body)
 }
 
 func containsExpectedPaths(
@@ -124,7 +126,7 @@ func containsExpectedPaths(
 	requestedPaths := ctx.PathValues
 	// Check if the paths match
 	pathsMatch := true
-	for key, value := range body.Paths {
+	for key, value := range body.Matching.Paths {
 		if requestedPaths[key] != fmt.Sprintf("%v", value) {
 			pathsMatch = false
 			break
@@ -136,11 +138,23 @@ func containsExpectedPaths(
 func containsExpectedQueries(ctx *api_context.ApiRequestContext[*api_context.DefaultContext], body ResponseBody) bool {
 	requestedQueries := ctx.QueryValues
 	var queriesMatch = true
-	for key, value := range body.Queries {
+	for key, value := range body.Matching.Queries {
 		if requestedQueries[key][0] != fmt.Sprintf("%v", value) {
 			queriesMatch = false
 			break
 		}
 	}
 	return queriesMatch
+}
+
+func containsExpectedHeaders(ctx *api_context.ApiRequestContext[*api_context.DefaultContext], body ResponseBody) bool {
+	requestHeaders := ctx.Headers
+	var headersMatch = true
+	for key, value := range body.Matching.Headers {
+		if requestHeaders[key][0] != fmt.Sprintf("%v", value) {
+			headersMatch = false
+			break
+		}
+	}
+	return headersMatch
 }

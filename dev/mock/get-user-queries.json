@@ -10,9 +10,11 @@
     "statusCode": 200,
     "bodies": [
       {
-        "queries": {
-          "id": 2,
-          "name": "User 2"
+        "matching": {
+          "queries": {
+            "id": 2,
+            "name": "User 2"
+          }
         },
         "headers": {
           "id": 2,
@@ -25,9 +27,11 @@
         }
       },
       {
-        "queries": {
-          "id": 3,
-          "name": "User 3"
+        "matching": {
+          "queries": {
+            "id": 3,
+            "name": "User 3"
+          }
         },
         "headers": {
           "id": 3,
