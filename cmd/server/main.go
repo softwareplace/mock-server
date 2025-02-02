@@ -1,29 +1,36 @@
 package main
 
 import (
+	"github.com/softwareplace/http-utils/api_context"
 	"github.com/softwareplace/http-utils/server"
 	"github.com/softwareplace/mock-server/pkg/env"
 	"github.com/softwareplace/mock-server/pkg/handler"
-	"time"
+	"log"
 )
 
+var appEnv = env.GetAppEnv()
+
+var appServer server.ApiRouterHandler[*api_context.DefaultContext]
+
 func main() {
-	appEnv := env.GetAppEnv()
-	handler.LoadResponses()
+	handler.LoadResponses(onFileChangeDetected)
+	select {}
+}
 
-	appServer := server.Default().
-		WithContextPath(appEnv.ContextPath)
-
-	if !handler.ConfigLoaded {
-		for !handler.ConfigLoaded {
-			time.Sleep(256 * time.Millisecond)
+func onFileChangeDetected(restartServer bool) {
+	if restartServer {
+		if appServer != nil {
+			err := appServer.StopServer()
+			if err != nil {
+				log.Fatalf("Failed to stop server: %v", err)
+			}
 		}
 	}
 
-	handler.Register(appServer)
-
-	appServer.
+	appServer = server.Default().
+		WithContextPath(appEnv.ContextPath).
+		EmbeddedServer(handler.Register).
 		WithPort(appEnv.Port).
 		NotFoundHandler().
-		StartServer()
+		StartServerInGoroutine()
 }

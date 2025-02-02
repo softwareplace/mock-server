@@ -2,6 +2,7 @@ package mock_server
 
 import (
 	"encoding/json"
+	"github.com/softwareplace/http-utils/api_context"
 	"github.com/softwareplace/mock-server/pkg/env"
 	"github.com/softwareplace/mock-server/pkg/handler"
 	"io"
@@ -24,14 +25,15 @@ func TestMockServer(t *testing.T) {
 
 	env.SetAppEnv(appEnv)
 
+	var appServer server.ApiRouterHandler[*api_context.DefaultContext]
+
 	// Load mock responses
-	handler.LoadResponses()
-
-	// Create a test server
-	appServer := server.Default().
-		WithContextPath(appEnv.ContextPath)
-
-	handler.Register(appServer)
+	handler.LoadResponses(func(restartServer bool) {
+		// Create a test server
+		appServer = server.Default().
+			WithContextPath(appEnv.ContextPath).
+			EmbeddedServer(handler.Register)
+	})
 
 	// Test cases
 	tests := []struct {
@@ -160,14 +162,15 @@ func TestDelaySimulation(t *testing.T) {
 
 	env.SetAppEnv(appEnv)
 
+	var appServer server.ApiRouterHandler[*api_context.DefaultContext]
+
 	// Load mock responses
-	handler.LoadResponses()
-
-	// Create a test server
-	appServer := server.Default().
-		WithContextPath(appEnv.ContextPath)
-
-	handler.Register(appServer)
+	handler.LoadResponses(func(restartServer bool) {
+		// Create a test server
+		appServer = server.Default().
+			WithContextPath(appEnv.ContextPath).
+			EmbeddedServer(handler.Register)
+	})
 
 	// Test delay simulation
 	req, err := http.NewRequest("GET", "/v1/products?id=1", nil)

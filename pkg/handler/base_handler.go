@@ -173,7 +173,7 @@ func containsExpectedHeaders(ctx *api_context.ApiRequestContext[*api_context.Def
 		}
 	}
 
-	var headersMatch = len(requestHeaders) == len(body.Matching.Headers)
+	var headersMatch = true
 
 	for key, value := range body.Matching.Headers {
 		if len(requestHeaders[key]) == 0 {

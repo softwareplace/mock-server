@@ -43,5 +43,4 @@ type ResponseConfig struct {
 
 var (
 	MockConfigResponses []MockConfigResponse
-	ConfigLoaded        bool
 )

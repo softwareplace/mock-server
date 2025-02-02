@@ -11,13 +11,13 @@ import (
 	"time"
 )
 
-func LoadResponses() {
+func LoadResponses(onFileChangeDetected OnFileChangDetected) {
 	loadMockResponses()
 	go func() {
-		watchAndReload()
+		watchAndReload(onFileChangeDetected)
 	}()
 	time.Sleep(256 * time.Millisecond)
-	ConfigLoaded = true
+	onFileChangeDetected(false)
 }
 
 func loadMockResponses() {

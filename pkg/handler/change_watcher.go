@@ -7,10 +7,14 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
-func watchAndReload() {
+type OnFileChangDetected func(restartServer bool)
+
+func watchAndReload(onFileChangeDetected OnFileChangDetected) {
 	mockJsonFilesBasePath := env.GetAppEnv().MockPath
+
 	// Set up file watcher to reload mock responses and redirect rules on file changes
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -32,6 +36,13 @@ func watchAndReload() {
 		log.Fatalf("Failed to watch directory: %v", err)
 	}
 
+	// Debouncing mechanism
+	var (
+		debounceDuration = 250 * time.Millisecond // Set the debounce duration to 1 second
+		lastEventTime    time.Time
+		timer            *time.Timer
+	)
+
 	go func() {
 		log.Println("Starting file watcher...")
 		for {
@@ -42,8 +53,24 @@ func watchAndReload() {
 				}
 
 				if event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Create == fsnotify.Create || event.Op&fsnotify.Remove == fsnotify.Remove {
-					log.Printf("File %s changed: %s", event.Name, event.Op)
-					loadMockResponses()
+
+					// Update the last event time
+					lastEventTime = time.Now()
+
+					// If a timer is already running, stop it
+					if timer != nil {
+						timer.Stop()
+					}
+
+					// Start a new timer
+					timer = time.AfterFunc(debounceDuration, func() {
+						// Check if the last event was more than debounceDuration ago
+						if time.Since(lastEventTime) >= debounceDuration {
+							log.Printf("File %s has changed. Reloading the server...", event.Name)
+							loadMockResponses()
+							onFileChangeDetected(true)
+						}
+					})
 
 					// If a new file is created, add it to the watcher
 					if event.Op&fsnotify.Create == fsnotify.Create {
