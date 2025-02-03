@@ -15,14 +15,13 @@ import (
 	"github.com/softwareplace/http-utils/server"
 )
 
-func TestMockServer(t *testing.T) {
-	// Initialize the mock server
-	appEnv := &env.AppEnv{
-		Port:        "8080",
-		MockPath:    "./dev",
-		ContextPath: "/",
-	}
+var appEnv = &env.AppEnv{
+	Port:        "18888",
+	MockPath:    "./dev",
+	ContextPath: "/",
+}
 
+func TestMockServer(t *testing.T) {
 	env.SetAppEnv(appEnv)
 
 	var appServer server.ApiRouterHandler[*api_context.DefaultContext]
@@ -152,14 +151,8 @@ func jsonDeepEqual(actual, expected []byte) bool {
 	}
 	return reflect.DeepEqual(actualJSON, expectedJSON)
 }
-func TestDelaySimulation(t *testing.T) {
-	// Initialize the mock server
-	appEnv := &env.AppEnv{
-		Port:        "8080",
-		MockPath:    "./dev",
-		ContextPath: "/",
-	}
 
+func TestDelaySimulation(t *testing.T) {
 	env.SetAppEnv(appEnv)
 
 	var appServer server.ApiRouterHandler[*api_context.DefaultContext]

@@ -6,7 +6,7 @@ toolchain go1.23.4
 
 require (
 	github.com/fsnotify/fsnotify v1.8.0
-	github.com/softwareplace/http-utils v0.0.0-20250202210937-3a1b7bd9783d
+	github.com/softwareplace/http-utils v0.0.0-20250203002220-ece86ea70ef7
 	gopkg.in/yaml.v3 v3.0.1
 )
 
