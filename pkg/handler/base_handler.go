@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/softwareplace/http-utils/api_context"
 	"github.com/softwareplace/http-utils/server"
@@ -40,7 +41,7 @@ func redirectHandler(ctx *api_context.ApiRequestContext[*api_context.DefaultCont
 			request.Header.Set(key, fmt.Sprintf("%v", value))
 		}
 
-		requestURI := request.RequestURI
+		requestURI := request.URL.RequestURI()
 
 		replacement := config.Redirect.Replacement
 		if len(replacement) > 0 {
@@ -53,9 +54,41 @@ func redirectHandler(ctx *api_context.ApiRequestContext[*api_context.DefaultCont
 		targetURL := strings.TrimSuffix(config.Redirect.Url, "/") + "/" +
 			strings.TrimPrefix(requestURI, "/")
 
-		http.Redirect(*ctx.Writer, &request, targetURL, http.StatusTemporaryRedirect)
-		log.Printf("Redirecting to %s\n", targetURL)
+		req, err := http.NewRequest(request.Method, targetURL, request.Body)
+
+		if err != nil {
+			ctx.Error("Failed to complete the request", http.StatusInternalServerError)
+			return true
+		}
+		for key, value := range config.Redirect.Headers {
+			req.Header.Set(key, fmt.Sprintf("%v", value))
+		}
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+
+		if err != nil {
+			ctx.Error(err.Error(), http.StatusInternalServerError)
+			return true
+		}
+
+		if config.Response.Delay > 0 {
+			time.Sleep(time.Duration(config.Response.Delay) * time.Millisecond)
+		}
+
+		decoder := json.NewDecoder(resp.Body)
+		target := map[string]any{}
+
+		err = decoder.Decode(&target)
+
+		if err != nil {
+			ctx.Error(err.Error(), http.StatusInternalServerError)
+			return true
+		}
+
+		ctx.Response(target, resp.StatusCode)
 		return true
+
 	}
 	return false
 }

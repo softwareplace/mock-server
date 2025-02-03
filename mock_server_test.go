@@ -69,15 +69,6 @@ func TestMockServer(t *testing.T) {
 			expectedBody:   `{"id":2,"name":"Product 2","amount":2500.75}`,
 		},
 		{
-			name:           "Test GET /v1/redirect/products with query id=1",
-			method:         "GET",
-			path:           "/v1/redirect/products",
-			queryParams:    map[string]string{"id": "2"},
-			headers:        map[string]string{"id": "2", "name": "Product 2"},
-			expectedStatus: http.StatusTemporaryRedirect,
-		},
-
-		{
 			name:           "Test GET /api/user/view for id=2",
 			method:         "GET",
 			path:           "/api/user/view",
