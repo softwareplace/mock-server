@@ -2,7 +2,9 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/softwareplace/http-utils/error_handler"
 	"github.com/softwareplace/mock-server/pkg/env"
+	"github.com/softwareplace/mock-server/pkg/model"
 	"gopkg.in/yaml.v3"
 	"log"
 	"os"
@@ -23,44 +25,44 @@ func LoadResponses(onFileChangeDetected OnFileChangDetected) {
 func loadMockResponses() {
 	mockJsonFilesBasePath := env.GetAppEnv().MockPath
 
-	var newResponses []MockConfigResponse
+	var newResponses []model.MockConfigResponse
 
-	err := filepath.Walk(mockJsonFilesBasePath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() && (strings.HasSuffix(info.Name(), ".json") || strings.HasSuffix(info.Name(), ".yaml") || strings.HasSuffix(info.Name(), ".yml")) {
-			data, err := os.ReadFile(path)
+	error_handler.Handler(func() {
+		err := filepath.Walk(mockJsonFilesBasePath, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
-				log.Printf("Failed to read file %s: %v", path, err)
-				return nil
+				return err
 			}
-
-			var response MockConfigResponse
-			if strings.HasSuffix(info.Name(), ".json") {
-				if err := json.Unmarshal(data, &response); err != nil {
-					log.Printf("Failed to parse JSON in file %s: %v", path, err)
+			if !info.IsDir() && (strings.HasSuffix(info.Name(), ".json") || strings.HasSuffix(info.Name(), ".yaml") || strings.HasSuffix(info.Name(), ".yml")) {
+				data, err := os.ReadFile(path)
+				if err != nil {
+					log.Printf("Failed to read file %s: %v", path, err)
 					return nil
 				}
-			} else {
-				if err := yaml.Unmarshal(data, &response); err != nil {
-					log.Printf("Failed to parse YAML in file %s: %v", path, err)
-					return nil
-				}
-			}
 
-			newResponses = append(newResponses, response)
+				var response model.MockConfigResponse
+				if strings.HasSuffix(info.Name(), ".json") {
+					if err := json.Unmarshal(data, &response); err != nil {
+						log.Printf("Failed to parse JSON in file %s: %v", path, err)
+						return nil
+					}
+				} else {
+					if err := yaml.Unmarshal(data, &response); err != nil {
+						log.Printf("Failed to parse YAML in file %s: %v", path, err)
+						return nil
+					}
+				}
+
+				newResponses = append(newResponses, response)
+			}
+			return nil
+		})
+
+		if err != nil {
+			log.Printf("Failed to read directory: %v", err)
 		}
-		return nil
+	}, func(err error) {
+		log.Printf("Failed to load mock files: %v", err)
 	})
 
-	if err != nil {
-		log.Printf("Failed to read directory: %v", err)
-	}
-
-	if len(newResponses) == 0 {
-		panic("No mock responses found")
-	}
-
-	MockConfigResponses = newResponses
+	model.MockConfigResponses = newResponses
 }

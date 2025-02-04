@@ -1,0 +1,10 @@
+port: 8080
+context-path: /
+mock: ./dev
+redirect:
+  url: https://jsonplaceholder.typicode.com
+  log-enabled: true
+  store-responses-dir: ./.temp/
+  replacement:
+    - old: mock-server
+      new: ""

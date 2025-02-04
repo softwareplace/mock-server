@@ -1,4 +1,4 @@
-package handler
+package model
 
 type MockConfigResponse struct {
 	Request  RequestConfig  `json:"request" yaml:"request"`   // Request contains the configuration details for the HTTP request.
@@ -12,9 +12,11 @@ type Replacement struct {
 }
 
 type RedirectConfig struct {
-	Url         string         `json:"url" yaml:"url"`                 // Url specifies the target URL for the redirection.
-	Headers     map[string]any `json:"headers" yaml:"headers"`         // Headers to provide custom headers when redirect
-	Replacement []Replacement  `json:"replacement" yaml:"replacement"` // Replacement specifies a list of string replacements to perform in the redirection process.
+	Url               string         `json:"url" yaml:"url"`                               // Url specifies the target URL for the redirection.
+	Headers           map[string]any `json:"headers" yaml:"headers"`                       // Headers to provide custom headers when redirect
+	Replacement       []Replacement  `json:"replacement" yaml:"replacement"`               // Replacement specifies a list of string replacements to perform in the redirection process.
+	LogEnabled        bool           `json:"logEnabled" yaml:"log-enabled"`                // LogEnabled determines whether logging is enabled for the redirection process response.
+	StoreResponsesDir string         `json:"StoreResponsesDir" yaml:"store-responses-dir"` // StoreResponsesDir if provided, store the data from redirected process.
 }
 
 type RequestConfig struct {
@@ -41,6 +43,14 @@ type ResponseConfig struct {
 	Bodies      []ResponseBody `json:"bodies" yaml:"bodies"`                            // Bodies contains multiple response bodies to choose from. If no matching filter is set for the body, the first body will be returned.
 }
 
+type MockServerConfig struct {
+	RedirectConfig *RedirectConfig `yaml:"redirect"`
+	Port           string          `yaml:"port"`
+	MockPath       string          `yaml:"mock"`
+	ContextPath    string          `yaml:"context-path"`
+}
+
 var (
 	MockConfigResponses []MockConfigResponse
+	Config              *MockServerConfig
 )

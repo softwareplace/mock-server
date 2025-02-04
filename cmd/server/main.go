@@ -31,6 +31,6 @@ func onFileChangeDetected(restartServer bool) {
 		WithContextPath(appEnv.ContextPath).
 		EmbeddedServer(handler.Register).
 		WithPort(appEnv.Port).
-		NotFoundHandler().
+		CustomNotFoundHandler(handler.NotFound).
 		StartServerInGoroutine()
 }

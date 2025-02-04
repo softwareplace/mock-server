@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/softwareplace/http-utils/api_context"
 	"github.com/softwareplace/http-utils/server"
 	"github.com/softwareplace/mock-server/pkg/env"
+	"github.com/softwareplace/mock-server/pkg/model"
 	"log"
 	"net/http"
 	"strings"
@@ -13,7 +13,7 @@ import (
 )
 
 func Register(appServer server.ApiRouterHandler[*api_context.DefaultContext]) {
-	for _, config := range MockConfigResponses {
+	for _, config := range model.MockConfigResponses {
 		if config.Request.Method != "" && config.Request.Path != "" && config.Response.Bodies != nil {
 			contextPath := env.GetAppEnv().ContextPath
 
@@ -32,72 +32,20 @@ func Register(appServer server.ApiRouterHandler[*api_context.DefaultContext]) {
 	}
 }
 
-func redirectHandler(ctx *api_context.ApiRequestContext[*api_context.DefaultContext], config MockConfigResponse) (redirected bool) {
+func redirectHandler(ctx *api_context.ApiRequestContext[*api_context.DefaultContext], config model.MockConfigResponse) (redirected bool) {
 	if config.Redirect.Url != "" {
-		var request http.Request
-		request = *ctx.Request
-
-		for key, value := range config.Redirect.Headers {
-			request.Header.Set(key, fmt.Sprintf("%v", value))
-		}
-
-		requestURI := request.URL.RequestURI()
-
-		replacement := config.Redirect.Replacement
-		if len(replacement) > 0 {
-			for _, replace := range replacement {
-				requestURI = strings.ReplaceAll(requestURI, replace.Old, replace.New)
-			}
-		}
-		requestURI = strings.ReplaceAll(requestURI, "//", "/")
-
-		targetURL := strings.TrimSuffix(config.Redirect.Url, "/") + "/" +
-			strings.TrimPrefix(requestURI, "/")
-
-		req, err := http.NewRequest(request.Method, targetURL, request.Body)
-
-		if err != nil {
-			ctx.Error("Failed to complete the request", http.StatusInternalServerError)
-			return true
-		}
-		for key, value := range config.Redirect.Headers {
-			req.Header.Set(key, fmt.Sprintf("%v", value))
-		}
-
-		client := &http.Client{}
-		resp, err := client.Do(req)
-
-		if err != nil {
-			ctx.Error(err.Error(), http.StatusInternalServerError)
-			return true
-		}
-
-		if config.Response.Delay > 0 {
-			time.Sleep(time.Duration(config.Response.Delay) * time.Millisecond)
-		}
-
-		decoder := json.NewDecoder(resp.Body)
-		target := map[string]any{}
-
-		err = decoder.Decode(&target)
-
-		if err != nil {
-			ctx.Error(err.Error(), http.StatusInternalServerError)
-			return true
-		}
-
-		ctx.Response(target, resp.StatusCode)
-		return true
+		return requestRedirectHandler(ctx, config.Redirect)
 
 	}
 	return false
 }
+
 func requestHandler(
 	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
-	config MockConfigResponse,
+	config model.MockConfigResponse,
 ) {
 	bodies := config.Response.Bodies
-	var matchedBody *ResponseBody
+	var matchedBody *model.ResponseBody
 
 	matchedBody = findMatchingBody(ctx, bodies)
 
@@ -128,9 +76,9 @@ func requestHandler(
 
 func findMatchingBody(
 	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
-	bodies []ResponseBody,
-) *ResponseBody {
-	var matchedBody *ResponseBody
+	bodies []model.ResponseBody,
+) *model.ResponseBody {
+	var matchedBody *model.ResponseBody
 	// Extract query and path parameters from the incoming request
 
 	// Iterate through the bodies to find a match
@@ -145,7 +93,7 @@ func findMatchingBody(
 
 func containsExpectedPathsAndQueries(
 	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
-	body ResponseBody,
+	body model.ResponseBody,
 ) bool {
 	if body.Matching == nil {
 		return true
@@ -158,7 +106,7 @@ func containsExpectedPathsAndQueries(
 
 func containsExpectedPaths(
 	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
-	body ResponseBody,
+	body model.ResponseBody,
 ) bool {
 	requestedPaths := ctx.PathValues
 	// Check if the paths match
@@ -175,7 +123,7 @@ func containsExpectedPaths(
 	return pathsMatch
 }
 
-func containsExpectedQueries(ctx *api_context.ApiRequestContext[*api_context.DefaultContext], body ResponseBody) bool {
+func containsExpectedQueries(ctx *api_context.ApiRequestContext[*api_context.DefaultContext], body model.ResponseBody) bool {
 	requestedQueries := ctx.QueryValues
 	var queriesMatch = len(requestedQueries) == len(body.Matching.Queries)
 	for key, value := range body.Matching.Queries {
@@ -195,7 +143,7 @@ func containsExpectedQueries(ctx *api_context.ApiRequestContext[*api_context.Def
 	return queriesMatch
 }
 
-func containsExpectedHeaders(ctx *api_context.ApiRequestContext[*api_context.DefaultContext], body ResponseBody) bool {
+func containsExpectedHeaders(ctx *api_context.ApiRequestContext[*api_context.DefaultContext], body model.ResponseBody) bool {
 	var requestHeaders = make(map[string][]string)
 
 	if ctx.Request.Header != nil {
