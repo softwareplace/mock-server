@@ -45,10 +45,10 @@ type ResponseConfig struct {
 }
 
 type MockServerConfig struct {
-	RedirectConfig *RedirectConfig `yaml:"redirect"`
-	Port           string          `yaml:"port"`
-	MockPath       string          `yaml:"mock"`
-	ContextPath    string          `yaml:"context-path"`
+	RedirectConfig *RedirectConfig `yaml:"redirect"`     // RedirectConfig contains settings for handling HTTP redirections.
+	Port           string          `yaml:"port"`         // Port specifies the port on which the mock server will run.
+	MockPath       string          `yaml:"mock"`         // MockPath defines the path to the mock configuration files.
+	ContextPath    string          `yaml:"context-path"` // ContextPath sets the base path or prefix for all routes handled by the mock server.
 }
 
 var (

@@ -30,6 +30,12 @@ go build -o bin/$(uname -m)/mock-server cmd/server/main.go
 
 ## Usage
 
+### Environment Variables
+
+| Variable Name | Required | Default Value | Description                                        |
+|---------------|----------|---------------|----------------------------------------------------|
+| `LOG_PATH`    | No       | `./logs/`     | The directory path where log files will be stored. |
+
 ### Running the Server
 
 To start the server, run the following command:
