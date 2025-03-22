@@ -5,3 +5,10 @@ response:
   content-type: "application/json"
   status-code: 200
   delay: 256
+redirect:
+  url: https://jsonplaceholder.typicode.com
+  log-enabled: true
+  store-responses-dir: ./.temp/
+  replacement:
+    - old: /api
+      new: ""
