@@ -22,6 +22,25 @@ func SetAppEnv(appEnv *AppEnv) {
 	env = appEnv
 }
 
+// UserHomePathFix resolves a path that starts with '~' to the user's home directory.
+// If the home directory cannot be determined, it logs an error and exits the application.
+// Parameters:
+//   - path: The file path string, potentially starting with '~'.
+//
+// Returns:
+//   - The resolved file path with '~' replaced by the user's home directory, or the original path if no substitution is needed.
+func UserHomePathFix(path string) string {
+	if strings.HasPrefix(path, "~") {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			fmt.Printf("Error: Unable to resolve user home directory for path: %v\n", err)
+			os.Exit(1)
+		}
+		path = strings.Replace(path, "~", homeDir, 1)
+	}
+	return path
+}
+
 func GetAppEnv() *AppEnv {
 	if env == nil {
 		serverConfig := flag.String("config", "", "The configuration file to use for the mock server")
@@ -50,6 +69,12 @@ func GetAppEnv() *AppEnv {
 			fmt.Println("Error: The 'mock' flag is required and cannot be empty.")
 			os.Exit(1)
 		}
+
+		*mockPath = UserHomePathFix(*mockPath)
+		*serverConfig = UserHomePathFix(*serverConfig)
+
+		fmt.Printf("Using server configuration file at: %s\n", *serverConfig)
+		fmt.Printf("Using mock data path at: %s\n", *mockPath)
 
 		env = &AppEnv{
 			Port:         *portFlag,
