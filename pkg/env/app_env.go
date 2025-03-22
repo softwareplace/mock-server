@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/softwareplace/mock-server/pkg/config"
 	"github.com/softwareplace/mock-server/pkg/model"
+	"log"
 	"os"
 	"strings"
 )
@@ -77,8 +78,8 @@ func GetAppEnv() *AppEnv {
 		*mockPath = UserHomePathFix(*mockPath)
 		*serverConfig = UserHomePathFix(*serverConfig)
 
-		fmt.Printf("Using server configuration file at: %s\n", *serverConfig)
-		fmt.Printf("Using mock data path at: %s\n", *mockPath)
+		log.Printf("Using server configuration file at: %s\n", *serverConfig)
+		log.Printf("Using mock data path at: %s\n", *mockPath)
 
 		env = &AppEnv{
 			Port:         *portFlag,
