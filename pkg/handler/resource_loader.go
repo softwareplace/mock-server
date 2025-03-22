@@ -52,6 +52,8 @@ func loadMockResponses() {
 					}
 				}
 
+				response.Redirect.StoreResponsesDir = env.UserHomePathFix(response.Redirect.StoreResponsesDir)
+				response.MockFilePath = path
 				newResponses = append(newResponses, response)
 			}
 			return nil

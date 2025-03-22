@@ -62,6 +62,10 @@ func GetAppEnv() *AppEnv {
 			if model.Config.Port != "" {
 				*portFlag = model.Config.Port
 			}
+
+			if model.Config.RedirectConfig != nil {
+				model.Config.RedirectConfig.StoreResponsesDir = UserHomePathFix(model.Config.RedirectConfig.StoreResponsesDir)
+			}
 		}
 
 		if *mockPath == "" {

@@ -6,3 +6,6 @@ build:
 
 update:
 	@go mod tidy
+
+run:
+	@go run cmd/server/main.go -config ./dev/config.yml

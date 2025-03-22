@@ -1,0 +1,19 @@
+request:
+  path: "/api/posts"
+  method: "GET"
+response:
+  content-type: "application/json"
+  status-code: 200
+  delay: 256
+  bodies:
+    - body:
+        id: 1
+        name: "Product Test Update"
+        amount: 2500.75
+redirect:
+  url: https://jsonplaceholder.typicode.com
+  log-enabled: true
+  store-responses-dir: ./.temp/posts/
+  replacement:
+    - old: /api
+      new: ""

@@ -14,20 +14,24 @@ import (
 
 func Register(appServer server.ApiRouterHandler[*api_context.DefaultContext]) {
 	for _, config := range model.MockConfigResponses {
-		if config.Request.Method != "" && config.Request.Path != "" && config.Response.Bodies != nil {
-			contextPath := env.GetAppEnv().ContextPath
+		if config.Request.Method != "" && config.Request.Path != "" {
+			if config.Redirect.Url != "" || config.Response.Bodies != nil {
+				contextPath := env.GetAppEnv().ContextPath
+				path := strings.TrimPrefix(config.Request.Path, "/")
+				log.Printf("Registering handler for %s::%s%s\n", config.Request.Method, contextPath, path)
 
-			path := strings.TrimPrefix(config.Request.Path, "/")
-			log.Printf("Registering handler for %s::%s%s\n", config.Request.Method, contextPath, path)
+				appServer.Add(func(ctx *api_context.ApiRequestContext[*api_context.DefaultContext]) {
+					url := ctx.Request.RequestURI
+					log.Printf("Request %s::%s\n", config.Request.Method, url)
+					if !redirectHandler(ctx, config) {
+						requestHandler(ctx, config)
+					}
 
-			appServer.Add(func(ctx *api_context.ApiRequestContext[*api_context.DefaultContext]) {
-				url := ctx.Request.RequestURI
-				log.Printf("Request %s::%s\n", config.Request.Method, url)
-				if !redirectHandler(ctx, config) {
-					requestHandler(ctx, config)
-				}
+				}, config.Request.Path, config.Request.Method)
+			} else {
+				log.Printf("Invalid definition on %s. No response body or redirect URL found for %s::%s\n", config.MockFilePath, config.Request.Method, config.Request.Path)
+			}
 
-			}, config.Request.Path, config.Request.Method)
 		}
 	}
 }
@@ -60,7 +64,7 @@ func requestHandler(
 
 	// If a matching body is found, return it as the response
 	if matchedBody != nil {
-		for key, value := range matchedBody.Headers {
+		for key, value := range *matchedBody.Headers {
 			writer.Header().Set(key, fmt.Sprintf("%v", value))
 		}
 		if config.Response.Delay > 0 {

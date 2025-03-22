@@ -1,9 +1,10 @@
 package model
 
 type MockConfigResponse struct {
-	Request  RequestConfig  `json:"request" yaml:"request"`   // Request contains the configuration details for the HTTP request.
-	Response ResponseConfig `json:"response" yaml:"response"` // Response holds the specifications for the HTTP response configuration.
-	Redirect RedirectConfig `json:"redirect" yaml:"redirect"` // Redirect defines the settings for HTTP redirection if applicable.
+	Request      RequestConfig  `json:"request" yaml:"request"`   // Request contains the configuration details for the HTTP request.
+	Response     ResponseConfig `json:"response" yaml:"response"` // Response holds the specifications for the HTTP response configuration.
+	Redirect     RedirectConfig `json:"redirect" yaml:"redirect"` // Redirect defines the settings for HTTP redirection if applicable.
+	MockFilePath string         // MockFilePath specifies the file path to the mock configuration file used for HTTP request and response simulation.
 }
 
 type Replacement struct {
@@ -16,7 +17,7 @@ type RedirectConfig struct {
 	Headers           map[string]any `json:"headers" yaml:"headers"`                       // Headers to provide custom headers when redirect
 	Replacement       []Replacement  `json:"replacement" yaml:"replacement"`               // Replacement specifies a list of string replacements to perform in the redirection process.
 	LogEnabled        bool           `json:"logEnabled" yaml:"log-enabled"`                // LogEnabled determines whether logging is enabled for the redirection process response.
-	StoreResponsesDir string         `json:"StoreResponsesDir" yaml:"store-responses-dir"` // StoreResponsesDir if provided, store the data from redirected process.
+	StoreResponsesDir string         `json:"storeResponsesDir" yaml:"store-responses-dir"` // StoreResponsesDir if provided, store the data from redirected process.
 }
 
 type RequestConfig struct {
@@ -31,9 +32,9 @@ type Matching struct {
 	Headers map[string]any `json:"headers" yaml:"headers"` // Headers is a map of key-value pairs used for defining matching header parameters in requests.
 }
 type ResponseBody struct {
-	Body     interface{}    `json:"body" yaml:"body"`         // Body represents the dynamic content of the response, serialized based on the provided JSON or YAML format.
-	Matching *Matching      `json:"matching" yaml:"matching"` // Matching handles product retrieval. Filters the body with matching queries, headers, and path parameters if provided.
-	Headers  map[string]any `json:"headers" yaml:"headers"`   // Headers in case that need to add headers to the response
+	Body     *interface{}    `json:"body" yaml:"body"`         // Body represents the dynamic content of the response, serialized based on the provided JSON or YAML format.
+	Matching *Matching       `json:"matching" yaml:"matching"` // Matching handles product retrieval. Filters the body with matching queries, headers, and path parameters if provided.
+	Headers  *map[string]any `json:"headers" yaml:"headers"`   // Headers in case that need to add headers to the response
 }
 
 type ResponseConfig struct {

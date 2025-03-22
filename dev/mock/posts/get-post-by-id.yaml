@@ -1,0 +1,7 @@
+request:
+  path: "/api/posts/{id}"
+  method: "GET"
+response:
+  content-type: "application/json"
+  status-code: 200
+  delay: 256
