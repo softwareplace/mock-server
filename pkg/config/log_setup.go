@@ -9,17 +9,19 @@ import (
 )
 
 var (
-	logFile     *os.File // Global variable to keep the file open
-	logDirPath  string   // Global variable to store the log directory path
-	logFilePath string   // Global variable to store the full log file path
-	multiWriter io.Writer
+	logDateFormat = "2006-01-02" // logDateFormat defines the date format (YYYY-MM-DD) used for naming log files and tracking the current date.
+	logFile       *os.File       // Global variable to keep the file open
+	logDirPath    string         // Global variable to store the log directory path
+	logFilePath   string         // Global variable to store the full log file path
+	multiWriter   io.Writer
+	currentDate   string // Global variable to track the current date
 )
 
 func LogSetup(dirPath string) {
 	logDirPath = dirPath
 	createLogFile()
 
-	// Start a goroutine to monitor the log file
+	// Start a goroutine to monitor the log file and handle date changes
 	go monitorLogFile()
 }
 
@@ -30,7 +32,7 @@ func createLogFile() {
 	}
 
 	// Generate the log file name with the current date
-	currentDate := time.Now().Format("2006-01-02") // yyyy-MM-dd format
+	currentDate = time.Now().Format(logDateFormat) // yyyy-MM-dd format
 	logFileName := "mock-server-" + currentDate + ".log"
 	logFilePath = filepath.Join(logDirPath, logFileName)
 
@@ -54,7 +56,13 @@ func createLogFile() {
 // monitorLogFile periodically checks if the log file exists and recreates it if necessary
 func monitorLogFile() {
 	for {
-		time.Sleep(5 * time.Second) // Check every 5 seconds
+		time.Sleep(1 * time.Second) // Check every 5 seconds
+
+		// Check if the current date has changed
+		newDate := time.Now().Format(logDateFormat)
+		if newDate != currentDate {
+			rotateLogFile(newDate)
+		}
 
 		// Check if the log file still exists
 		if _, err := os.Stat(logFilePath); os.IsNotExist(err) {
@@ -62,6 +70,23 @@ func monitorLogFile() {
 			createLogFile() // Recreate the log file
 		}
 	}
+}
+
+// rotateLogFile closes the current log file and creates a new one with the updated date
+func rotateLogFile(newDate string) {
+	// Close the current log file
+	if logFile != nil {
+		err := logFile.Close()
+		if err != nil {
+			log.Printf("Failed to close log file: %v", err)
+		}
+	}
+
+	// Update the current date
+	currentDate = newDate
+
+	// Create a new log file with the updated date
+	createLogFile()
 }
 
 // CloseLogFile can be called to properly close the log file when the program exits
