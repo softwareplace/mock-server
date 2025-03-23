@@ -64,9 +64,12 @@ func requestHandler(
 
 	// If a matching body is found, return it as the response
 	if matchedBody != nil {
-		for key, value := range *matchedBody.Headers {
-			writer.Header().Set(key, fmt.Sprintf("%v", value))
+		if matchedBody.Headers != nil {
+			for key, value := range *matchedBody.Headers {
+				writer.Header().Set(key, fmt.Sprintf("%v", value))
+			}
 		}
+
 		if config.Response.Delay > 0 {
 			time.Sleep(time.Duration(config.Response.Delay) * time.Millisecond)
 		}
