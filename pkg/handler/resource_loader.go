@@ -2,7 +2,7 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/softwareplace/http-utils/error_handler"
+	errohandler "github.com/softwareplace/http-utils/error"
 	"github.com/softwareplace/mock-server/pkg/env"
 	"github.com/softwareplace/mock-server/pkg/model"
 	"gopkg.in/yaml.v3"
@@ -27,7 +27,7 @@ func loadMockResponses() {
 
 	var newResponses []model.MockConfigResponse
 
-	error_handler.Handler(func() {
+	errohandler.Handler(func() {
 		err := filepath.Walk(mockJsonFilesBasePath, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err

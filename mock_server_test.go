@@ -2,7 +2,8 @@ package mock_server
 
 import (
 	"encoding/json"
-	"github.com/softwareplace/http-utils/api_context"
+	apicontext "github.com/softwareplace/http-utils/context"
+	"github.com/softwareplace/http-utils/logger"
 	"github.com/softwareplace/mock-server/pkg/env"
 	"github.com/softwareplace/mock-server/pkg/handler"
 	"io"
@@ -21,16 +22,20 @@ var appEnv = &env.AppEnv{
 	ContextPath: "/",
 }
 
+func init() {
+	logger.LogSetup()
+}
+
 func TestMockServer(t *testing.T) {
 	env.SetAppEnv(appEnv)
 
-	var appServer server.ApiRouterHandler[*api_context.DefaultContext]
+	var appServer server.Api[*apicontext.DefaultContext]
 
 	// Load mock responses
 	handler.LoadResponses(func(restartServer bool) {
 		// Create a test server
 		appServer = server.Default().
-			WithContextPath(appEnv.ContextPath).
+			ContextPath(appEnv.ContextPath).
 			EmbeddedServer(handler.Register)
 	})
 
@@ -146,13 +151,13 @@ func jsonDeepEqual(actual, expected []byte) bool {
 func TestDelaySimulation(t *testing.T) {
 	env.SetAppEnv(appEnv)
 
-	var appServer server.ApiRouterHandler[*api_context.DefaultContext]
+	var appServer server.Api[*apicontext.DefaultContext]
 
 	// Load mock responses
 	handler.LoadResponses(func(restartServer bool) {
 		// Create a test server
 		appServer = server.Default().
-			WithContextPath(appEnv.ContextPath).
+			ContextPath(appEnv.ContextPath).
 			EmbeddedServer(handler.Register)
 	})
 

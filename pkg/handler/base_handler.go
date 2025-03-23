@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	"github.com/softwareplace/http-utils/api_context"
+	apicontext "github.com/softwareplace/http-utils/context"
 	"github.com/softwareplace/http-utils/server"
 	"github.com/softwareplace/mock-server/pkg/env"
 	"github.com/softwareplace/mock-server/pkg/model"
@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func Register(appServer server.ApiRouterHandler[*api_context.DefaultContext]) {
+func Register(appServer server.Api[*apicontext.DefaultContext]) {
 	for _, config := range model.MockConfigResponses {
 		if config.Request.Method != "" && config.Request.Path != "" {
 			if config.Redirect.Url != "" || config.Response.Bodies != nil {
@@ -20,7 +20,7 @@ func Register(appServer server.ApiRouterHandler[*api_context.DefaultContext]) {
 				path := strings.TrimPrefix(config.Request.Path, "/")
 				log.Printf("Registering handler for %s::%s%s\n", config.Request.Method, contextPath, path)
 
-				appServer.Add(func(ctx *api_context.ApiRequestContext[*api_context.DefaultContext]) {
+				appServer.Add(func(ctx *apicontext.Request[*apicontext.DefaultContext]) {
 					url := ctx.Request.RequestURI
 					log.Printf("Request %s::%s\n", config.Request.Method, url)
 					if !redirectHandler(ctx, config) {
@@ -36,7 +36,7 @@ func Register(appServer server.ApiRouterHandler[*api_context.DefaultContext]) {
 	}
 }
 
-func redirectHandler(ctx *api_context.ApiRequestContext[*api_context.DefaultContext], config model.MockConfigResponse) (redirected bool) {
+func redirectHandler(ctx *apicontext.Request[*apicontext.DefaultContext], config model.MockConfigResponse) (redirected bool) {
 	if config.Redirect.Url != "" {
 		return requestRedirectHandler(ctx, config.Redirect)
 
@@ -45,7 +45,7 @@ func redirectHandler(ctx *api_context.ApiRequestContext[*api_context.DefaultCont
 }
 
 func requestHandler(
-	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
+	ctx *apicontext.Request[*apicontext.DefaultContext],
 	config model.MockConfigResponse,
 ) {
 	bodies := config.Response.Bodies
@@ -79,7 +79,7 @@ func requestHandler(
 }
 
 func findMatchingBody(
-	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
+	ctx *apicontext.Request[*apicontext.DefaultContext],
 	bodies []model.ResponseBody,
 ) *model.ResponseBody {
 	var matchedBody *model.ResponseBody
@@ -96,7 +96,7 @@ func findMatchingBody(
 }
 
 func containsExpectedPathsAndQueries(
-	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
+	ctx *apicontext.Request[*apicontext.DefaultContext],
 	body model.ResponseBody,
 ) bool {
 	if body.Matching == nil {
@@ -109,7 +109,7 @@ func containsExpectedPathsAndQueries(
 }
 
 func containsExpectedPaths(
-	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
+	ctx *apicontext.Request[*apicontext.DefaultContext],
 	body model.ResponseBody,
 ) bool {
 	requestedPaths := ctx.PathValues
@@ -127,7 +127,7 @@ func containsExpectedPaths(
 	return pathsMatch
 }
 
-func containsExpectedQueries(ctx *api_context.ApiRequestContext[*api_context.DefaultContext], body model.ResponseBody) bool {
+func containsExpectedQueries(ctx *apicontext.Request[*apicontext.DefaultContext], body model.ResponseBody) bool {
 	requestedQueries := ctx.QueryValues
 	var queriesMatch = len(requestedQueries) == len(body.Matching.Queries)
 	for key, value := range body.Matching.Queries {
@@ -147,7 +147,7 @@ func containsExpectedQueries(ctx *api_context.ApiRequestContext[*api_context.Def
 	return queriesMatch
 }
 
-func containsExpectedHeaders(ctx *api_context.ApiRequestContext[*api_context.DefaultContext], body model.ResponseBody) bool {
+func containsExpectedHeaders(ctx *apicontext.Request[*apicontext.DefaultContext], body model.ResponseBody) bool {
 	var requestHeaders = make(map[string][]string)
 
 	if ctx.Request.Header != nil {

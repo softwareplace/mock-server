@@ -3,7 +3,8 @@ package mock_server
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/softwareplace/http-utils/api_context"
+	apicontext "github.com/softwareplace/http-utils/context"
+	"github.com/softwareplace/http-utils/logger"
 	"github.com/softwareplace/http-utils/request"
 	"github.com/softwareplace/http-utils/server"
 	"github.com/softwareplace/mock-server/pkg/env"
@@ -17,6 +18,8 @@ import (
 )
 
 func TestServerReloading(t *testing.T) {
+	logger.LogSetup()
+
 	mockFilePath := "./dev/mock/.temp"
 	mockFileName := "product-test-mode.yaml"
 
@@ -28,7 +31,7 @@ func TestServerReloading(t *testing.T) {
 		WithPath("v1/products/server/reload/1000")
 
 	env.SetAppEnv(appEnv)
-	var appServer server.ApiRouterHandler[*api_context.DefaultContext]
+	var appServer server.Api[*apicontext.DefaultContext]
 	serverWasReloaded := false
 
 	handler.LoadResponses(func(restartServer bool) {
@@ -135,9 +138,9 @@ func _removeMockTestFile(t *testing.T, mockFileFullPath string) {
 }
 
 func createServer(
-	appServer server.ApiRouterHandler[*api_context.DefaultContext],
+	appServer server.Api[*apicontext.DefaultContext],
 	restartServer bool,
-) server.ApiRouterHandler[*api_context.DefaultContext] {
+) server.Api[*apicontext.DefaultContext] {
 	if restartServer {
 		if appServer != nil {
 			err := appServer.StopServer()
@@ -148,9 +151,9 @@ func createServer(
 	}
 
 	return server.Default().
-		WithContextPath(appEnv.ContextPath).
+		Port(appEnv.Port).
+		ContextPath(appEnv.ContextPath).
 		EmbeddedServer(handler.Register).
-		WithPort(appEnv.Port).
 		NotFoundHandler().
 		StartServerInGoroutine()
 }

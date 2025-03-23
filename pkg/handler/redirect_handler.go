@@ -3,8 +3,8 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/softwareplace/http-utils/api_context"
-	"github.com/softwareplace/http-utils/error_handler"
+	apicontext "github.com/softwareplace/http-utils/context"
+	errohandler "github.com/softwareplace/http-utils/error"
 	"github.com/softwareplace/mock-server/pkg/file"
 	"github.com/softwareplace/mock-server/pkg/model"
 	"io"
@@ -15,7 +15,7 @@ import (
 )
 
 func requestRedirectHandler(
-	ctx *api_context.ApiRequestContext[*api_context.DefaultContext],
+	ctx *apicontext.Request[*apicontext.DefaultContext],
 	redirect model.RedirectConfig,
 ) bool {
 	var request http.Request
@@ -95,7 +95,7 @@ func requestRedirectHandler(
 			"body":      string(bodyBytes),
 		}
 
-		error_handler.Handler(func() {
+		errohandler.Handler(func() {
 			if strings.Contains(responseContentType, "application/json") {
 				data["body"] = json.RawMessage(bodyBytes)
 			}
