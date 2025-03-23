@@ -1,6 +1,6 @@
 port: 8080
 context-path: /
-mock: ~/workspace/personal/backend/mock-server/dev/mock
+mock: ./dev/mock
 redirect:
   url: https://jsonplaceholder.typicode.com
   log-enabled: true
