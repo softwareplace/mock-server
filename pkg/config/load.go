@@ -1,9 +1,9 @@
 package config
 
 import (
+	log "github.com/sirupsen/logrus"
 	"github.com/softwareplace/mock-server/pkg/file"
 	"github.com/softwareplace/mock-server/pkg/model"
-	"log"
 )
 
 func Load(configFilePath string) {
@@ -11,7 +11,7 @@ func Load(configFilePath string) {
 
 		config, err := file.FromYaml(configFilePath, model.MockServerConfig{})
 		if err != nil {
-			log.Printf("Failed to load config file: %v", err)
+			log.Errorf("Failed to load config file: %v", err)
 			return
 		}
 

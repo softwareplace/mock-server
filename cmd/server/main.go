@@ -1,20 +1,22 @@
 package main
 
 import (
-	apicontext "github.com/softwareplace/http-utils/context"
-	"github.com/softwareplace/http-utils/logger"
-	"github.com/softwareplace/http-utils/server"
+	log "github.com/sirupsen/logrus"
+	apicontext "github.com/softwareplace/goserve/context"
+	"github.com/softwareplace/goserve/logger"
+	"github.com/softwareplace/goserve/server"
 	"github.com/softwareplace/mock-server/pkg/env"
 	"github.com/softwareplace/mock-server/pkg/handler"
-	"log"
 )
 
-var appEnv = env.GetAppEnv()
-
-var appServer server.Api[*apicontext.DefaultContext]
+var (
+	appEnv    *env.AppEnv
+	appServer server.Api[*apicontext.DefaultContext]
+)
 
 func init() {
 	logger.LogSetup()
+	appEnv = env.GetAppEnv()
 }
 
 func main() {

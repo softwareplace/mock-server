@@ -3,12 +3,12 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	apicontext "github.com/softwareplace/http-utils/context"
-	errohandler "github.com/softwareplace/http-utils/error"
+	log "github.com/sirupsen/logrus"
+	apicontext "github.com/softwareplace/goserve/context"
+	errohandler "github.com/softwareplace/goserve/error"
 	"github.com/softwareplace/mock-server/pkg/file"
 	"github.com/softwareplace/mock-server/pkg/model"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -61,7 +61,7 @@ func requestRedirectHandler(
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			log.Printf("Failed to close response body: %v", err)
+			log.Errorf("Failed to close response body: %v", err)
 		}
 	}(resp.Body)
 
@@ -84,7 +84,7 @@ func requestRedirectHandler(
 	_, err = writer.Write(bodyBytes)
 
 	if redirect.LogEnabled {
-		log.Printf("%s -> %s returned: %s", requestedUri, targetUri, string(bodyBytes))
+		log.Infof("%s -> %s returned: %s", requestedUri, targetUri, string(bodyBytes))
 	}
 
 	if redirect.StoreResponsesDir != "" {
@@ -100,7 +100,7 @@ func requestRedirectHandler(
 				data["body"] = json.RawMessage(bodyBytes)
 			}
 		}, func(err error) {
-			log.Printf("Failed to store response: %v", err)
+			log.Errorf("Failed to store response: %v", err)
 		})
 		storeFile(data, redirect, requestedUri)
 
@@ -108,7 +108,7 @@ func requestRedirectHandler(
 	}
 
 	if err != nil {
-		log.Printf("Failed to write response body: %v", err)
+		log.Errorf("Failed to write response body: %v", err)
 		return false
 	}
 
@@ -130,7 +130,7 @@ func storeFile(data map[string]interface{}, redirect model.RedirectConfig, reque
 
 	err = file.SaveToFile(jsonData, filePath)
 	if err != nil {
-		log.Printf("Failed to save data to file: %v", err)
+		log.Errorf("Failed to save data to file: %v", err)
 		return
 	}
 

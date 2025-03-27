@@ -2,8 +2,8 @@ package mock_server
 
 import (
 	"encoding/json"
-	apicontext "github.com/softwareplace/http-utils/context"
-	"github.com/softwareplace/http-utils/logger"
+	apicontext "github.com/softwareplace/goserve/context"
+	"github.com/softwareplace/goserve/logger"
 	"github.com/softwareplace/mock-server/pkg/env"
 	"github.com/softwareplace/mock-server/pkg/handler"
 	"io"
@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/softwareplace/http-utils/server"
+	"github.com/softwareplace/goserve/server"
 )
 
 var appEnv = &env.AppEnv{
@@ -24,10 +24,10 @@ var appEnv = &env.AppEnv{
 
 func init() {
 	logger.LogSetup()
+	env.SetAppEnv(appEnv)
 }
 
 func TestMockServer(t *testing.T) {
-	env.SetAppEnv(appEnv)
 
 	var appServer server.Api[*apicontext.DefaultContext]
 

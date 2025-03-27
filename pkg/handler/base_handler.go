@@ -2,11 +2,11 @@ package handler
 
 import (
 	"fmt"
-	apicontext "github.com/softwareplace/http-utils/context"
-	"github.com/softwareplace/http-utils/server"
+	log "github.com/sirupsen/logrus"
+	apicontext "github.com/softwareplace/goserve/context"
+	"github.com/softwareplace/goserve/server"
 	"github.com/softwareplace/mock-server/pkg/env"
 	"github.com/softwareplace/mock-server/pkg/model"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -18,18 +18,18 @@ func Register(appServer server.Api[*apicontext.DefaultContext]) {
 			if config.Redirect.Url != "" || config.Response.Bodies != nil {
 				contextPath := env.GetAppEnv().ContextPath
 				path := strings.TrimPrefix(config.Request.Path, "/")
-				log.Printf("Registering handler for %s::%s%s\n", config.Request.Method, contextPath, path)
+				log.Infof("Registering handler for %s::%s%s", config.Request.Method, contextPath, path)
 
 				appServer.Add(func(ctx *apicontext.Request[*apicontext.DefaultContext]) {
 					url := ctx.Request.RequestURI
-					log.Printf("Request %s::%s\n", config.Request.Method, url)
+					log.Infof("Request %s::%s", config.Request.Method, url)
 					if !redirectHandler(ctx, config) {
 						requestHandler(ctx, config)
 					}
 
 				}, config.Request.Path, config.Request.Method)
 			} else {
-				log.Printf("Invalid definition on %s. No response body or redirect URL found for %s::%s\n", config.MockFilePath, config.Request.Method, config.Request.Path)
+				log.Warnf("Invalid definition on %s. No response body or redirect URL found for %s::%s", config.MockFilePath, config.Request.Method, config.Request.Path)
 			}
 
 		}
@@ -125,7 +125,7 @@ func containsExpectedPaths(
 		}
 	}
 	if pathsMatch {
-		log.Printf("Paths match for request %s\n", ctx.Request.URL.RequestURI())
+		log.Infof("Paths match for request %s", ctx.Request.URL.RequestURI())
 	}
 	return pathsMatch
 }
@@ -145,7 +145,7 @@ func containsExpectedQueries(ctx *apicontext.Request[*apicontext.DefaultContext]
 		}
 	}
 	if queriesMatch {
-		log.Printf("Queries match for request %s\n", ctx.Request.URL.RequestURI())
+		log.Infof("Queries match for request %s", ctx.Request.URL.RequestURI())
 	}
 	return queriesMatch
 }
@@ -174,7 +174,7 @@ func containsExpectedHeaders(ctx *apicontext.Request[*apicontext.DefaultContext]
 		}
 	}
 	if headersMatch {
-		log.Printf("Headers match for request %s\n", ctx.Request.URL.RequestURI())
+		log.Infof("Headers match for request %s", ctx.Request.URL.RequestURI())
 	}
 	return headersMatch
 }

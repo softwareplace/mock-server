@@ -2,8 +2,8 @@ package handler
 
 import (
 	"github.com/fsnotify/fsnotify"
+	log "github.com/sirupsen/logrus"
 	"github.com/softwareplace/mock-server/pkg/env"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,7 +27,7 @@ func watchAndReload(onFileChangeDetected OnFileChangDetected) {
 			return err
 		}
 		if info.IsDir() {
-			log.Printf("Watching directory: %s", path)
+			log.Infof("Watching directory: %s", path)
 			return watcher.Add(path)
 		}
 		return nil
@@ -44,7 +44,7 @@ func watchAndReload(onFileChangeDetected OnFileChangDetected) {
 	)
 
 	go func() {
-		log.Println("Starting file watcher...")
+		log.Infof("Starting file watcher...")
 		for {
 			select {
 			case event, ok := <-watcher.Events:
@@ -66,7 +66,7 @@ func watchAndReload(onFileChangeDetected OnFileChangDetected) {
 					timer = time.AfterFunc(debounceDuration, func() {
 						// Check if the last event was more than debounceDuration ago
 						if time.Since(lastEventTime) >= debounceDuration {
-							log.Printf("File %s has changed. Reloading the server...", event.Name)
+							log.Infof("File %s has changed. Reloading the server...", event.Name)
 							loadMockResponses()
 							onFileChangeDetected(true)
 						}
@@ -76,13 +76,13 @@ func watchAndReload(onFileChangeDetected OnFileChangDetected) {
 					if event.Op&fsnotify.Create == fsnotify.Create {
 						info, err := os.Stat(event.Name)
 						if err != nil {
-							log.Printf("Failed to stat new file: %v", err)
+							log.Infof("Failed to stat new file: %v", err)
 							continue
 						}
 						if !info.IsDir() && isValidFileType(info) {
 							err = watcher.Add(event.Name)
 							if err != nil {
-								log.Printf("Failed to add new file to watcher: %v", err)
+								log.Infof("Failed to add new file to watcher: %v", err)
 							}
 						}
 					}
@@ -91,7 +91,7 @@ func watchAndReload(onFileChangeDetected OnFileChangDetected) {
 				if !ok {
 					return
 				}
-				log.Printf("File watcher error: %v", err)
+				log.Infof("File watcher error: %v", err)
 			}
 		}
 	}()
@@ -100,9 +100,9 @@ func watchAndReload(onFileChangeDetected OnFileChangDetected) {
 		<-make(chan struct{})
 		err := watcher.Close()
 		if err != nil {
-			log.Printf("Failed to close file watcher: %v", err)
+			log.Infof("Failed to close file watcher: %v", err)
 		}
-		log.Println("File watcher closed.")
+		log.Infof("File watcher closed.")
 	}()
 }
 

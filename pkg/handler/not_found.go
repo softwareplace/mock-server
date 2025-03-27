@@ -1,7 +1,7 @@
 package handler
 
 import (
-	apicontext "github.com/softwareplace/http-utils/context"
+	apicontext "github.com/softwareplace/goserve/context"
 	"github.com/softwareplace/mock-server/pkg/config"
 	"github.com/softwareplace/mock-server/pkg/model"
 	"net/http"
